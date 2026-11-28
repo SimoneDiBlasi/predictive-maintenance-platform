@@ -1,34 +1,42 @@
+
 using PredictiveMaintenance.Api.Extensions;
 
-internal class Program
+var builder = WebApplication.CreateBuilder(args);
+
+// Register application services
+builder.Services.AddApplicationHealthChecks();
+
+// Register controllers
+builder.Services.AddControllers();
+
+// Register Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+// Configure Swagger
+if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 {
-    private static void Main(string[] args)
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
     {
-        var builder = WebApplication.CreateBuilder(args);
-        builder.Services.AddApplicationHealthChecks();
+        options.SwaggerEndpoint(
+            "/swagger/v1/swagger.json",
+            "PredictiveMaintenance API v1");
 
-        // Add services to the container.
-
-        builder.Services.AddControllers();
-        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-        builder.Services.AddOpenApi();
-
-        var app = builder.Build();
-
-        app.UseApplicationHealthChecks();
-
-        // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
-        {
-            app.MapOpenApi();
-        }
-
-        app.UseHttpsRedirection();
-
-        app.UseAuthorization();
-
-        app.MapControllers();
-
-        app.Run();
-    }
+        options.RoutePrefix = "swagger";
+    });
 }
+
+// Configure middleware
+app.UseHttpsRedirection();
+
+app.UseApplicationHealthChecks();
+
+app.UseAuthorization();
+
+// Map endpoints
+app.MapControllers();
+
+app.Run();
