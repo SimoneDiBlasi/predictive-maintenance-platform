@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="PredictiveMaintenance.Api/PredictiveMaintenance.Api.csproj" />
+  <Project Path="PredictiveMaintenance.Core/PredictiveMaintenance.Core.csproj" />
+  <Project Path="PredictiveMaintenance.Handlers/PredictiveMaintenance.Handlers.csproj" />
+  <Project Path="PredictiveMaintenance.Repository/PredictiveMaintenance.Repository.csproj" />
+  <Project Path="PredictiveMaintenance/PredictiveMaintenance.csproj" />
+</Solution>
