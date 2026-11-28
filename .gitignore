@@ -112,3 +112,7 @@ docker-compose.override.yml
 temp/
 tmp/
 .cache/
+
+infrastructure/docker/.env.development
+infrastructure/docker/.env.staging
+infrastructure/docker/.env.production
