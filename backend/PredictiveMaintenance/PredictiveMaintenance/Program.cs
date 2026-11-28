@@ -14,8 +14,24 @@ try
     // Configure logging
     builder.Host.UseApplicationLogging();
 
+    // Configure CORS
+    var allowedOrigins = builder.Configuration
+        .GetSection("Cors:AllowedOrigins")
+        .Get<string[]>() ?? [];
+
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("FrontendPolicy", policy =>
+        {
+            policy
+                .WithOrigins(allowedOrigins)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+    });
+
     // Register application services
-    builder.Services.AddApplicationHealthChecks();
+    builder.Services.AddApplicationHealthChecks(builder.Configuration);
 
     // Register controllers
     builder.Services.AddControllers();
@@ -38,13 +54,16 @@ try
 
     // Middleware
     app.UseHttpsRedirection();
+    app.UseCors("FrontendPolicy");
     app.UseApplicationHealthChecks();
     app.UseAuthorization();
 
     // Map endpoints
     app.MapControllers();
 
-    Log.Information("Application started in {Environment}", app.Environment.EnvironmentName);
+    Log.Information(
+        "Application started in {Environment}",
+        app.Environment.EnvironmentName);
 
     app.Run();
 }
