@@ -1,42 +1,58 @@
 
 using PredictiveMaintenance.Api.Extensions;
+using PredictiveMaintenance.Extensions;
+using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
+LoggingExtensions.ConfigureBootstrapLogging();
 
-// Register application services
-builder.Services.AddApplicationHealthChecks();
-
-// Register controllers
-builder.Services.AddControllers();
-
-// Register Swagger
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-var app = builder.Build();
-
-// Configure Swagger
-if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
+try
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
+    Log.Information("Starting PredictiveMaintenance API");
+
+    var builder = WebApplication.CreateBuilder(args);
+
+    // Configure logging
+    builder.Host.UseApplicationLogging();
+
+    // Register application services
+    builder.Services.AddApplicationHealthChecks();
+
+    // Register controllers
+    builder.Services.AddControllers();
+
+    // Register Swagger
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
+
+    var app = builder.Build();
+
+    // HTTP request logging
+    app.UseSerilogRequestLogging();
+
+    // Swagger
+    if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
     {
-        options.SwaggerEndpoint(
-            "/swagger/v1/swagger.json",
-            "PredictiveMaintenance API v1");
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
 
-        options.RoutePrefix = "swagger";
-    });
+    // Middleware
+    app.UseHttpsRedirection();
+    app.UseApplicationHealthChecks();
+    app.UseAuthorization();
+
+    // Map endpoints
+    app.MapControllers();
+
+    Log.Information("Application started in {Environment}", app.Environment.EnvironmentName);
+
+    app.Run();
 }
-
-// Configure middleware
-app.UseHttpsRedirection();
-
-app.UseApplicationHealthChecks();
-
-app.UseAuthorization();
-
-// Map endpoints
-app.MapControllers();
-
-app.Run();
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
